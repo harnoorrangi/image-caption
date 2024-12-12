@@ -1,12 +1,12 @@
-encoder_model = "microsoft/swin-base-patch4-window7-224-in22k"
-decoder_model = "distilbert/distilgpt2"
-cache_dir = "/content/drive/MyDrive/Image_captioning2/data/"
-dataset = "umaru97/flickr30k_train_val_test"
-model = "/content/drive/MyDrive/Image_captioning2/models/"
-trained_model = "/content/drive/MyDrive/Image_captioning2/models/trained/'VIT_gpt2_image_captioning'"
-TRAIN_BATCH_SIZE = 16
-VAL_BATCH_SIZE = 16
-TEST_BATCH_SIZE = 16
-VAL_EPOCHS = 1
-LR = 5e-5
-EPOCHS = 10
+encoder_model: "microsoft/swin-base-patch4-window7-224-in22k"
+decoder_model: "distilbert/distilgpt2"
+cache_dir: "/content/drive/MyDrive/Image_captioning2/data/"
+dataset: "umaru97/flickr30k_train_val_test"
+model: "/content/drive/MyDrive/Image_captioning2/models/"
+trained_model: "/content/drive/MyDrive/Image_captioning2/models/trained/'VIT_gpt2_image_captioning'"
+TRAIN_BATCH_SIZE: 16
+VAL_BATCH_SIZE: 16
+TEST_BATCH_SIZE: 16
+VAL_EPOCHS: 1
+LR: 5e-5
+EPOCHS: 10
