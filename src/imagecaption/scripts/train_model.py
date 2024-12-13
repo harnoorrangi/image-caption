@@ -6,7 +6,21 @@ from imagecaption.scripts.make_dataset import Flickr30kDataset
 from transformers import default_data_collator, ViTImageProcessor, GPT2TokenizerFast, VisionEncoderDecoderModel, Seq2SeqTrainingArguments, Seq2SeqTrainer
 
 
-def get_and_prepare_data(dataset_name, tokenizer_gpt, image_processor_vit):
+def get_and_prepare_data(dataset_name: str, tokenizer_gpt: GPT2TokenizerFast, image_processor_vit: ViTImageProcessor) -> tuple:
+    """
+    Downloads and prepares the Flickr30k dataset for training, validation, and testing.
+
+    Args:
+        dataset_name (str): The name of the dataset to load (e.g., "flickr30k").
+        tokenizer_gpt (GPT2TokenizerFast): A GPT-2 tokenizer for processing captions.
+        image_processor_vit (ViTImageProcessor): A ViT image processor for processing images.
+
+    Returns:
+        tuple: A tuple containing:
+            - train_dataset (Flickr30kDataset): Transformed training dataset.
+            - val_dataset (Flickr30kDataset): Transformed validation dataset.
+            - test_dataset (Flickr30kDataset): Transformed test dataset.
+    """
     logger.info(f"Starting data preparation for dataset: {dataset_name}")
     # Download train, val and test dataset
     train_data = load_dataset(dataset_name, split="train")
@@ -37,7 +51,19 @@ def get_and_prepare_data(dataset_name, tokenizer_gpt, image_processor_vit):
     return train_dataset, val_dataset, test_dataset
 
 
-def load_preprocessors(image_processor_vit, tokenizer_gpt):
+def load_preprocessors(image_processor_vit: str, tokenizer_gpt: str) -> tuple:
+    """
+    Loads and initializes the Vision Transformer (ViT) image processor and GPT-2 tokenizer.
+
+    Args:
+        image_processor_vit (str): Path or model identifier for the ViT image processor.
+        tokenizer_gpt (str): Path or model identifier for the GPT-2 tokenizer.
+
+    Returns:
+        tuple: A tuple containing:
+            - image_processor (ViTImageProcessor): Initialized ViT image processor.
+            - tokenizer (GPT2TokenizerFast): Initialized GPT-2 tokenizer.
+    """
     # Load VIT Image processor and GPT2 Tokenizer
     image_processor = ViTImageProcessor.from_pretrained(image_processor_vit)
     tokenizer = GPT2TokenizerFast.from_pretrained(tokenizer_gpt)
@@ -46,7 +72,21 @@ def load_preprocessors(image_processor_vit, tokenizer_gpt):
     return image_processor, tokenizer
 
 
-def initialize_model(encoder, decoder, max_length, early_stoping, no_repeat_ngram, num_beans):
+def initialize_model(encoder: str, decoder: str, max_length: int, early_stoping: bool, no_repeat_ngram: int, num_beans: int) -> VisionEncoderDecoderModel:
+    """
+    Initializes a VisionEncoderDecoderModel with specific configurations.
+
+    Args:
+        encoder (str): The pre-trained encoder model (e.g., "google/vit-base-patch16-224").
+        decoder (str): The pre-trained decoder model (e.g., "gpt2").
+        max_length (int): The maximum length of generated sequences.
+        early_stoping (bool): Whether to stop generation early when an EOS token is encountered.
+        no_repeat_ngram (int): The size of the n-gram constraint to avoid repetition.
+        num_beans (int): The number of beams to use in beam search.
+
+    Returns:
+        VisionEncoderDecoderModel: Configured vision-encoder-decoder model.
+    """
     # Initialize model
     model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained(
         encoder, decoder).to(device)

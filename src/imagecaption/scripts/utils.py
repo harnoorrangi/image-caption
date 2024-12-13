@@ -1,9 +1,22 @@
 from evaluate import load
 import yaml
 import os
+from typing import Optional, Dict, Any
+from transformers import PreTrainedTokenizer
+from evaluate.evaluator import Evaluator
 
 
-def load_config(filename):
+def load_config(filename: str) -> Optional[Dict[str, Any]]:
+    """
+    Loads a YAML configuration file.
+
+    Args:
+        filename (str): Path to the YAML configuration file.
+
+    Returns:
+        Optional[Dict[str, Any]]: A dictionary containing the configuration data if the file is valid 
+        and can be parsed. Returns None if the file does not exist or cannot be parsed.
+    """
     if not os.path.exists(filename):
         print(f"Error: The file '{filename}' does not exist.")
         return None
@@ -17,12 +30,21 @@ def load_config(filename):
         return None
 
 
-# load the rouge and bleu metrics
-rouge = load("rouge")
-bleu = load("bleu")
+def compute_metrics(eval_pred: Evaluator.PredictionOutput) -> Dict[str, float]:
+    """
+    Computes ROUGE and BLEU metrics for evaluating predictions against references.
 
+    Args:
+        eval_pred (Evaluator.PredictionOutput): An object containing:
+            - `predictions` (torch.Tensor or list): The predicted sequences.
+            - `label_ids` (torch.Tensor or list): The reference sequences.
 
-def compute_metrics(eval_pred):
+    Returns:
+        Dict[str, float]: A dictionary containing:
+            - ROUGE scores (keys: "rouge1", "rouge2", "rougeL", etc.), scaled to percentages.
+            - "bleu" (float): The BLEU score, scaled to a percentage.
+            - "gen_len" (float): The average length of the generated captions.
+    """
     # load the rouge and bleu metrics
     rouge = load("rouge")
     bleu = load("bleu")
