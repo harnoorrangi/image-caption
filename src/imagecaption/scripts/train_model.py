@@ -1,12 +1,22 @@
 import torch
 from datasets import load_dataset
-from imagecaption.scripts.utils import load_config, compute_metrics
 from loguru import logger
+from transformers import (
+    GPT2TokenizerFast,
+    Seq2SeqTrainer,
+    Seq2SeqTrainingArguments,
+    VisionEncoderDecoderModel,
+    ViTImageProcessor,
+    default_data_collator,
+)
+
 from imagecaption.scripts.make_dataset import Flickr30kDataset
-from transformers import default_data_collator, ViTImageProcessor, GPT2TokenizerFast, VisionEncoderDecoderModel, Seq2SeqTrainingArguments, Seq2SeqTrainer
+from imagecaption.scripts.utils import compute_metrics, load_config
 
 
-def get_and_prepare_data(dataset_name: str, tokenizer_gpt: GPT2TokenizerFast, image_processor_vit: ViTImageProcessor) -> tuple:
+def get_and_prepare_data(
+    dataset_name: str, tokenizer_gpt: GPT2TokenizerFast, image_processor_vit: ViTImageProcessor
+) -> tuple:
     """
     Downloads and prepares the Flickr30k dataset for training, validation, and testing.
 
@@ -35,18 +45,15 @@ def get_and_prepare_data(dataset_name: str, tokenizer_gpt: GPT2TokenizerFast, im
 
     # Transform train,valid and test dataset
     logger.info("Transforming datasets...")
-    train_dataset = Flickr30kDataset(
-        train_data, tokenizer=tokenizer_gpt, image_processor=image_processor_vit)
-    val_dataset = Flickr30kDataset(
-        val_data, tokenizer=tokenizer_gpt, image_processor=image_processor_vit)
-    test_dataset = Flickr30kDataset(
-        test_data, tokenizer=tokenizer_gpt, image_processor=image_processor_vit)
+    train_dataset = Flickr30kDataset(train_data, tokenizer=tokenizer_gpt, image_processor=image_processor_vit)
+    val_dataset = Flickr30kDataset(val_data, tokenizer=tokenizer_gpt, image_processor=image_processor_vit)
+    test_dataset = Flickr30kDataset(test_data, tokenizer=tokenizer_gpt, image_processor=image_processor_vit)
     logger.success("Datasets transformed successfully!")
 
     logger.info("Printing dimensions of final transformed dataset ")
     for item in train_dataset:
-        logger.info(item['labels'].shape)
-        logger.info(item['pixel_values'].shape)
+        logger.info(item["labels"].shape)
+        logger.info(item["pixel_values"].shape)
 
     return train_dataset, val_dataset, test_dataset
 
@@ -72,7 +79,9 @@ def load_preprocessors(image_processor_vit: str, tokenizer_gpt: str) -> tuple:
     return image_processor, tokenizer
 
 
-def initialize_model(encoder: str, decoder: str, max_length: int, early_stoping: bool, no_repeat_ngram: int, num_beans: int) -> VisionEncoderDecoderModel:
+def initialize_model(
+    encoder: str, decoder: str, max_length: int, early_stoping: bool, no_repeat_ngram: int, num_beans: int
+) -> VisionEncoderDecoderModel:
     """
     Initializes a VisionEncoderDecoderModel with specific configurations.
 
@@ -88,8 +97,7 @@ def initialize_model(encoder: str, decoder: str, max_length: int, early_stoping:
         VisionEncoderDecoderModel: Configured vision-encoder-decoder model.
     """
     # Initialize model
-    model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained(
-        encoder, decoder).to(device)
+    model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained(encoder, decoder).to(device)
 
     # Model configuration for caption generation
     model.config.decoder_start_token_id = tokenizer.bos_token_id
@@ -103,7 +111,7 @@ def initialize_model(encoder: str, decoder: str, max_length: int, early_stoping:
     return model
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if torch.cuda.is_available():
         device = torch.device("cuda")
         print(f"# available GPUs : {torch.cuda.device_count()}")
@@ -115,23 +123,31 @@ if __name__ == '__main__':
     config = load_config("configs/vit_gpt2.yaml")
     # Load VIT Image processor and GPT2 Tokenizer
     image_processor, tokenizer = load_preprocessors(
-        image_processor_vit=config['encoder_model'], tokenizer_gpt=config['decoder_model'])
+        image_processor_vit=config["encoder_model"], tokenizer_gpt=config["decoder_model"]
+    )
     # Prepare dataset
     train_dataset, val_dataset, test_dataset = get_and_prepare_data(
-        config['dataset'], tokenizer_gpt=tokenizer, image_processor_vit=image_processor)
+        config["dataset"], tokenizer_gpt=tokenizer, image_processor_vit=image_processor
+    )
 
     # Initialize model
     model = initialize_model(
-        encoder=config['encoder_model'], decoder=config['decoder_model'], max_length=config['generation_max_length'], early_stoping=config['early_stopping_enabled'], no_repeat_ngram=config['no_repeat_ngram_size'], num_beans=config['num_beans'])
+        encoder=config["encoder_model"],
+        decoder=config["decoder_model"],
+        max_length=config["generation_max_length"],
+        early_stoping=config["early_stopping_enabled"],
+        no_repeat_ngram=config["no_repeat_ngram_size"],
+        num_beans=config["num_beans"],
+    )
 
     # Setup training using Hugging face
     training_args = Seq2SeqTrainingArguments(
-        output_dir=config['trained_model'],
-        per_device_train_batch_size=config['TRAIN_BATCH_SIZE'],
-        per_device_eval_batch_size=config['VAL_BATCH_SIZE'],
+        output_dir=config["trained_model"],
+        per_device_train_batch_size=config["TRAIN_BATCH_SIZE"],
+        per_device_eval_batch_size=config["VAL_BATCH_SIZE"],
         predict_with_generate=True,
-        generation_max_length=config['generation_max_length'],
-        generation_num_beams=config['num_beans'],
+        generation_max_length=config["generation_max_length"],
+        generation_num_beams=config["num_beans"],
         evaluation_strategy="epoch",
         save_strategy="epoch",
         save_total_limit=3,
@@ -142,7 +158,7 @@ if __name__ == '__main__':
         num_train_epochs=config.EPOCHS,
         report_to="none",
         push_to_hub=True,
-        hub_model_id=config['hugging_face_model_id'],
+        hub_model_id=config["hugging_face_model_id"],
     )
 
     trainer = Seq2SeqTrainer(

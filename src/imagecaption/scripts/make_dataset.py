@@ -1,7 +1,8 @@
-from torch.utils.data import Dataset
+from typing import Any, Callable, Dict, Optional
+
 import torch
 from PIL import Image
-from typing import Callable, Optional, Dict, Any
+from torch.utils.data import Dataset
 
 
 class Flickr30kDataset(Dataset):
@@ -63,16 +64,11 @@ class Flickr30kDataset(Dataset):
             image = self.transform(image)
 
         # Process the image with the image processor
-        pixel_values = self.image_processor(
-            images=image, return_tensors="pt").pixel_values.squeeze()
+        pixel_values = self.image_processor(images=image, return_tensors="pt").pixel_values.squeeze()
 
         # Tokenize the caption
         tokenized_caption = self.tokenizer(
-            caption,
-            padding="max_length",
-            truncation=True,
-            max_length=self.max_length,
-            return_tensors="pt"
+            caption, padding="max_length", truncation=True, max_length=self.max_length, return_tensors="pt"
         )
 
         labels = tokenized_caption["input_ids"].squeeze()

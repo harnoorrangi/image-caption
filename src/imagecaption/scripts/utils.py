@@ -1,9 +1,10 @@
-from evaluate import load
-import yaml
 import os
-from typing import Optional, Dict, Any
-from transformers import PreTrainedTokenizer
+from typing import Any, Dict, Optional
+
+import yaml
+from evaluate import load
 from evaluate.evaluator import Evaluator
+from transformers import PreTrainedTokenizer
 
 
 def load_config(filename: str) -> Optional[Dict[str, Any]]:
@@ -14,7 +15,7 @@ def load_config(filename: str) -> Optional[Dict[str, Any]]:
         filename (str): Path to the YAML configuration file.
 
     Returns:
-        Optional[Dict[str, Any]]: A dictionary containing the configuration data if the file is valid 
+        Optional[Dict[str, Any]]: A dictionary containing the configuration data if the file is valid
         and can be parsed. Returns None if the file does not exist or cannot be parsed.
     """
     if not os.path.exists(filename):
@@ -22,7 +23,7 @@ def load_config(filename: str) -> Optional[Dict[str, Any]]:
         return None
 
     try:
-        with open(filename, 'r') as file:
+        with open(filename, "r") as file:
             config = yaml.safe_load(file)
         return config
     except yaml.YAMLError as e:
@@ -66,8 +67,4 @@ def compute_metrics(eval_pred: Evaluator.PredictionOutput) -> Dict[str, float]:
     # Get the length of the generated captions
     generation_length = bleu_result["translation_length"] / len(preds)
 
-    return {
-        **rouge_result,
-        "bleu": bleu_result["bleu"] * 100,
-        "gen_len": generation_length
-    }
+    return {**rouge_result, "bleu": bleu_result["bleu"] * 100, "gen_len": generation_length}
