@@ -3,8 +3,9 @@ from typing import Any, Dict, Optional
 
 import yaml
 from evaluate import load
-from evaluate.evaluator import Evaluator
+from transformers import EvalPrediction
 from transformers import PreTrainedTokenizer
+from loguru import logger
 
 
 def load_config(filename: str) -> Optional[Dict[str, Any]]:
@@ -19,7 +20,7 @@ def load_config(filename: str) -> Optional[Dict[str, Any]]:
         and can be parsed. Returns None if the file does not exist or cannot be parsed.
     """
     if not os.path.exists(filename):
-        print(f"Error: The file '{filename}' does not exist.")
+        logger.info(f"Error: The file '{filename}' does not exist.")
         return None
 
     try:
@@ -27,16 +28,16 @@ def load_config(filename: str) -> Optional[Dict[str, Any]]:
             config = yaml.safe_load(file)
         return config
     except yaml.YAMLError as e:
-        print(f"Error parsing YAML file: {e}")
-        return None
+        (f"Error parsing YAML file: {e}")
+        raise
 
 
-def compute_metrics(eval_pred: Evaluator.PredictionOutput) -> Dict[str, float]:
+def compute_metrics(eval_pred: EvalPrediction) -> Dict[str, float]:
     """
     Computes ROUGE and BLEU metrics for evaluating predictions against references.
 
     Args:
-        eval_pred (Evaluator.PredictionOutput): An object containing:
+        eval_pred (EvalPrediction): An object containing:
             - `predictions` (torch.Tensor or list): The predicted sequences.
             - `label_ids` (torch.Tensor or list): The reference sequences.
 
