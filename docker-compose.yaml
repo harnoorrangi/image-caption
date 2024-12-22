@@ -5,8 +5,11 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/train_model.dockerfile
-  predict:
-    image: predict:latest
-    build:
-      context: .
-      dockerfile: dockerfiles/predict_model.dockerfile
+    volumes:
+      - .:/app  
+    command: uv run train /app/configs/vit_gpt2.yaml
+  # predict:
+  #   image: predict:latest
+  #   build:
+  #     context: .
+  #     dockerfile: dockerfiles/predict_model.dockerfile
