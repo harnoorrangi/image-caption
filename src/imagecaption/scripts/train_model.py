@@ -6,6 +6,7 @@ import torch
 import typer
 from datasets import load_dataset
 from hydra.core.config_store import ConfigStore
+# from omegaconf import DictConfig
 from loguru import logger
 from transformers import (
     GPT2TokenizerFast,
