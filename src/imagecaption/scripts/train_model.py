@@ -1,9 +1,11 @@
 from typing import Tuple
 from typing_extensions import Annotated
 
+import hydra
 import torch
 import typer
 from datasets import load_dataset
+from hydra.core.config_store import ConfigStore
 from loguru import logger
 from transformers import (
     GPT2TokenizerFast,
@@ -13,11 +15,16 @@ from transformers import (
     ViTImageProcessor,
     default_data_collator,
 )
-
+from imagecaption.scripts.config import TrainingConfig
 from imagecaption.scripts.make_dataset import Flickr30kDataset
 from imagecaption.scripts.utils import compute_metrics, load_config
 
-app = typer.Typer()
+# Typer CLI
+# app = typer.Typer()
+
+# Hydra configuration store
+cs = ConfigStore.instance()
+cs.store(name="trainingconfig", node=TrainingConfig)
 
 
 def get_and_prepare_data(
@@ -161,8 +168,10 @@ def initialize_model(
     return model
 
 
-@app.command()
-def main(path: str = typer.Option(..., help="Path to the config file")):
+# @app.command()
+@hydra.main(config_path="../configs", config_name="vit_gpt2")
+def main(  # path: str = typer.Option(..., help="Path to the config file"),
+        cfg: TrainingConfig):
     """Runs CLI to start fine tuning of the model
 
     Args:
@@ -179,47 +188,48 @@ def main(path: str = typer.Option(..., help="Path to the config file")):
         else:
             device = torch.device("cpu")
             logger.info("No GPU available, using the CPU instead")
-        logger.debug(f"Path:{path}")
+        # logger.debug(f"Path:{path}")
         # Load configuration from YAML file
-        config = load_config(f"{path}")
+        # config = load_config(f"{path}")
+        logger.info(f"Configuration: {cfg}")
         logger.success("Configuration loaded successfully")
 
         # Load VIT Image processor and GPT2 Tokenizer
         image_processor, tokenizer = load_preprocessors(
-            image_processor_vit=config["encoder_model"], tokenizer_gpt=config["decoder_model"]
+            image_processor_vit=cfg.model_params.encoder_model, tokenizer_gpt=cfg.model_params.decoder_model
         )
 
         logger.success(
             "Preprocessors (image processor and tokenizer) loaded successfully")
 
         # Prepare dataset
-        logger.info(f"Preparing dataset: {config['dataset']}")
+        logger.info(f"Preparing dataset: {cfg.dataset_params.dataset}")
         train_dataset, val_dataset, test_dataset = get_and_prepare_data(
-            config["dataset"], tokenizer_gpt=tokenizer, image_processor_vit=image_processor
+            cfg.dataset_params.dataset, tokenizer_gpt=tokenizer, image_processor_vit=image_processor
         )
         logger.success("Dataset preparation completed successfully")
 
         # Initialize model
         logger.info("Initializing model with configuration settings...")
         model = initialize_model(
-            encoder=config["encoder_model"],
-            decoder=config["decoder_model"],
-            max_length=config["generation_max_length"],
-            early_stoping=config["early_stopping_enabled"],
-            no_repeat_ngram=config["no_repeat_ngram_size"],
-            num_beans=config["num_beans"],
+            encoder=cfg.model_params.encoder_model,
+            decoder=cfg.model_params.decoder_model,
+            max_length=cfg.train_params.generation_max_length,
+            early_stoping=cfg.train_params.early_stopping_enabled,
+            no_repeat_ngram=cfg.train_params.no_repeat_ngram_size,
+            num_beans=cfg.train_params.num_beans,
         )
         logger.success("Model initialized successfully")
 
         # Setup training using Hugging face
         logger.info("Setting up training arguments...")
         training_args = Seq2SeqTrainingArguments(
-            output_dir=config["trained_model"],
-            per_device_train_batch_size=config["TRAIN_BATCH_SIZE"],
-            per_device_eval_batch_size=config["VAL_BATCH_SIZE"],
+            output_dir=cfg.model_params.trained_model,
+            per_device_train_batch_size=cfg.train_params.train_batch_size,
+            per_device_eval_batch_size=cfg.train_params.val_batch_size,
             predict_with_generate=True,
-            generation_max_length=config["generation_max_length"],
-            generation_num_beams=config["num_beans"],
+            generation_max_length=cfg.train_params.generation_max_length,
+            generation_num_beams=cfg.train_params.num_beans,
             evaluation_strategy="epoch",
             save_strategy="epoch",
             save_total_limit=3,
@@ -227,10 +237,10 @@ def main(path: str = typer.Option(..., help="Path to the config file")):
             metric_for_best_model="eval_loss",
             greater_is_better=False,
             logging_steps=1024,
-            num_train_epochs=config.EPOCHS,
+            num_train_epochs=cfg.train_params.epochs,
             report_to="none",
             push_to_hub=True,
-            hub_model_id=config["hugging_face_model_id"],
+            hub_model_id=cfg.train_params.hugging_face_model_id,
         )
         logger.info("Training arguments setup completed")
 
@@ -341,4 +351,5 @@ if __name__ == "__main__":
     #     logger.error(f"An error occurred during the execution: {e}")
     #     raise RuntimeError("Execution failed") from e
     # TODO: Rewrite APP
-    app()
+    # app()
+    main()

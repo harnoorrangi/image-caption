@@ -1,12 +1,20 @@
-encoder_model: "microsoft/swin-base-patch4-window7-224-in22k"
-decoder_model: "distilbert/distilgpt2"
-cache_dir: "/content/drive/MyDrive/Image_captioning2/data/"
-dataset: "umaru97/flickr30k_train_val_test"
-model: "/content/drive/MyDrive/Image_captioning2/models/"
-trained_model: "/content/drive/MyDrive/Image_captioning2/models/trained/'VIT_gpt2_image_captioning'"
-TRAIN_BATCH_SIZE: 16
-VAL_BATCH_SIZE: 16
-TEST_BATCH_SIZE: 16
-VAL_EPOCHS: 1
-LR: 5e-5
-EPOCHS: 10
+model_params:
+  encoder_model: "microsoft/swin-base-patch4-window7-224-in22k"
+  decoder_model: "distilbert/distilgpt2"
+  trained_model: "models/trained/'VIT_gpt2_image_captioning'"
+
+dataset_params:
+  dataset: "umaru97/flickr30k_train_val_test"
+
+train_params:
+  train_batch_size: 16
+  val_batch_size: 16
+  test_batch_size: 16
+  val_epochs: 1
+  learning_rate: 5e-5
+  epochs: 10
+  generation_max_length: 50
+  early_stoping_enabled: True
+  no_repeat_ngram_size: 3
+  num_beans: 4
+  hugging_face_model_id: "hrangi/image_caption_trained"
