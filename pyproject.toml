@@ -20,6 +20,7 @@ dependencies = [
     "ipykernel>=6.29.5",
     "loguru>=0.7.3",
     "matplotlib>=3.9.3",
+    "mlflow>=2.19.0",
     "mypy>=1.13.0",
     "numpy<2",
     "pandas>=2.2.3",
