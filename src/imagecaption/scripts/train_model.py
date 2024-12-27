@@ -152,6 +152,9 @@ def initialize_model(
         )
         logger.success("Model initialized successfully!")
 
+        # Initialize the tokenizer for the decoder (assuming GPT-2)
+        tokenizer = GPT2TokenizerFast.from_pretrained(decoder)
+
         # Model configuration for caption generation
         model.config.decoder_start_token_id = tokenizer.bos_token_id
         model.config.pad_token_id = tokenizer.pad_token_id

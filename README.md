@@ -4,4 +4,7 @@ Image captioning using VIT and GPT2
 
 # todo
 
-Mlflow
+##TODO
+
+1. Implement MLFLOW
+2. Deploy on hugginceface spaces using steamlit
