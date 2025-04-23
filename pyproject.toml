@@ -1,6 +1,6 @@
 
 [project]
-name = "imagecaption"
+name = "image_caption"
 version = "0.0.1"
 description = "Image captioning using VIT and GPT2"
 authors = [
@@ -41,7 +41,7 @@ dependencies = [
 ]
 
 [project.scripts]
-train = "imagecaption.scripts.train_model:main"
+train = "image_caption.scripts.train_model:main"
 
 [build-system]
 requires = ["hatchling"]
