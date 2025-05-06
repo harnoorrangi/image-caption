@@ -7,6 +7,10 @@ from transformers import EvalPrediction
 from transformers import PreTrainedTokenizer
 from loguru import logger
 
+from hydra import compose, initialize
+from hydra.core.global_hydra import GlobalHydra
+from omegaconf import DictConfig
+
 
 def load_config(filename: str) -> Optional[Dict[str, Any]]:
     """
@@ -30,6 +34,15 @@ def load_config(filename: str) -> Optional[Dict[str, Any]]:
     except yaml.YAMLError as e:
         (f"Error parsing YAML file: {e}")
         raise
+    
+def load_hydra_config(config_name: str, config_path = "../configs") ->  Optional[Dict[str, Any]]:
+    """Safely initializes Hydra and returns the composed config."""
+    if not GlobalHydra.instance().is_initialized():
+        initialize(config_path=config_path, version_base=None)
+    else:
+        GlobalHydra.instance().clear()
+        initialize(config_path=config_path, version_base=None)
+    return compose(config_name=config_name)
 
 
 def compute_metrics(eval_pred: EvalPrediction) -> Dict[str, float]:
