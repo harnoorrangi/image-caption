@@ -2,6 +2,7 @@ from typing import Tuple
 
 import torch
 from datasets import load_dataset
+from dotenv import load_dotenv
 from loguru import logger
 from transformers import (
     GPT2TokenizerFast,
@@ -15,6 +16,10 @@ from transformers import (
 from image_caption.scripts.config import TrainingConfig
 from image_caption.scripts.make_dataset import Flickr30kDataset
 from image_caption.scripts.utils import compute_metrics
+
+# load environment variables from .env file
+load_dotenv()
+logger.info("Successfully loaded environment variables from .env file")
 
 
 def get_and_prepare_data(
@@ -73,6 +78,7 @@ def train_main(cfg: TrainingConfig):
         if torch.cuda.is_available()
         else torch.device("cpu")
     )
+
     logger.info(f"Using device: {device}")
 
     image_processor, tokenizer = load_preprocessors(cfg.model_params.encoder_model, cfg.model_params.decoder_model)
@@ -103,7 +109,7 @@ def train_main(cfg: TrainingConfig):
         greater_is_better=False,
         logging_steps=1024,
         num_train_epochs=cfg.train_params.epochs,
-        report_to="none",
+        report_to="wandb",
         push_to_hub=True,
         hub_model_id=cfg.train_params.hugging_face_model_id,
     )
