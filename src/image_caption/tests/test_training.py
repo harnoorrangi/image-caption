@@ -1,17 +1,17 @@
 import unittest
+from unittest.mock import MagicMock, patch
+
 import hydra
-from unittest.mock import patch, MagicMock
-from transformers import GPT2TokenizerFast, ViTImageProcessor
 from imagecaption.scripts.make_dataset import Flickr30kDataset
 from imagecaption.scripts.train_model import (
     get_and_prepare_data,
-    load_preprocessors,
     initialize_model,
+    load_preprocessors,
 )
+from transformers import GPT2TokenizerFast, ViTImageProcessor
 
 
 class TestImageCaptioning(unittest.TestCase):
-
     # @patch("datasets.load_dataset")
     # @patch("imagecaption.scripts.make_dataset.Flickr30kDataset")
     # def test_get_and_prepare_data(self, mock_flickr_dataset, mock_load_dataset):
@@ -54,9 +54,7 @@ class TestImageCaptioning(unittest.TestCase):
         mock_image_processor_instance = MagicMock(spec=ViTImageProcessor)
         mock_image_processor.return_value = mock_image_processor_instance
 
-        image_processor, tokenizer = load_preprocessors(
-            "vit_model_path", "gpt_model_path"
-        )
+        image_processor, tokenizer = load_preprocessors("vit_model_path", "gpt_model_path")
 
         # Assertions
         mock_image_processor.assert_called_once_with("vit_model_path")

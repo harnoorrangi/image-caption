@@ -11,38 +11,43 @@ from transformers import (
     ViTImageProcessor,
     default_data_collator,
 )
+
 from image_caption.scripts.config import TrainingConfig
 from image_caption.scripts.make_dataset import Flickr30kDataset
 from image_caption.scripts.utils import compute_metrics
 
 
-
 def get_and_prepare_data(
     dataset_name: str, tokenizer_gpt: GPT2TokenizerFast, image_processor_vit: ViTImageProcessor
 ) -> Tuple[Flickr30kDataset, Flickr30kDataset, Flickr30kDataset]:
-    logger.info(f"Preparing dataset: {dataset_name}")
-
+    logger.info("Loading dataset...")
     train_data = load_dataset(dataset_name, split="train")
     val_data = load_dataset(dataset_name, split="val")
     test_data = load_dataset(dataset_name, split="test")
-
+    logger.info("Dataset loaded successfully!")
+    logger.info("Preparing dataset...")
     train_dataset = Flickr30kDataset(train_data, tokenizer_gpt, image_processor_vit)
     val_dataset = Flickr30kDataset(val_data, tokenizer_gpt, image_processor_vit)
     test_dataset = Flickr30kDataset(test_data, tokenizer_gpt, image_processor_vit)
-
+    logger.info("Dataset prepared successfully!")
     return train_dataset, val_dataset, test_dataset
 
 
 def load_preprocessors(image_processor_vit: str, tokenizer_gpt: str):
+    logger.info("Loading image processor and tokenizer...")
     image_processor = ViTImageProcessor.from_pretrained(image_processor_vit)
     tokenizer = GPT2TokenizerFast.from_pretrained(tokenizer_gpt)
     tokenizer.pad_token = tokenizer.eos_token
+    logger.info("Image processor and tokenizer loaded successfully.")
     return image_processor, tokenizer
 
 
 def initialize_model(
     encoder: str, decoder: str, max_length: int, early_stopping: bool, no_repeat_ngram: int, num_beams: int
 ):
+    logger.info("Initializing model...")
+    logger.info(f"Encoder: {encoder}")
+    logger.info(f"Decoder: {decoder}")
     model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained(encoder, decoder)
 
     tokenizer = GPT2TokenizerFast.from_pretrained(decoder)
@@ -55,8 +60,9 @@ def initialize_model(
     model.config.no_repeat_ngram_size = no_repeat_ngram
     model.config.num_beams = num_beams
 
+    logger.info("Model initialized successfully.")
+    logger.info(f"Model config: {model.config}")
     return model
-
 
 
 def train_main(cfg: TrainingConfig):
@@ -69,13 +75,9 @@ def train_main(cfg: TrainingConfig):
     )
     logger.info(f"Using device: {device}")
 
-    image_processor, tokenizer = load_preprocessors(
-        cfg.model_params.encoder_model, cfg.model_params.decoder_model
-    )
+    image_processor, tokenizer = load_preprocessors(cfg.model_params.encoder_model, cfg.model_params.decoder_model)
 
-    train_dataset, val_dataset, _ = get_and_prepare_data(
-        cfg.dataset_params.dataset, tokenizer, image_processor
-    )
+    train_dataset, val_dataset, _ = get_and_prepare_data(cfg.dataset_params.dataset, tokenizer, image_processor)
 
     model = initialize_model(
         encoder=cfg.model_params.encoder_model,
@@ -115,7 +117,9 @@ def train_main(cfg: TrainingConfig):
         eval_dataset=val_dataset,
         data_collator=default_data_collator,
     )
-
+    logger.info("Starting training...")
+    logger.info(f"Training for {cfg.train_params.epochs} epochs...")
+    logger.info(f"Training batch size: {cfg.train_params.train_batch_size}")
+    logger.info(f"Validation batch size: {cfg.train_params.val_batch_size}")
     trainer.train()
     logger.success("Training completed successfully!")
-

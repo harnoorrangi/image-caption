@@ -4,7 +4,10 @@ Image captioning using VIT and GPT2
 
 # todo
 
-##TODO
+#TODO
 
-1. Implement MLFLOW
-2. Deploy on hugginceface spaces using steamlit
+1. Implement mlflow
+2. Implement monitoring
+3. Deploy on hugginceface spaces using steamlit
+4. Implement CICD, Precommit hook
+

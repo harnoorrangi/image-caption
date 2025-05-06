@@ -43,14 +43,20 @@ class Flickr30kDataset(Dataset):
                     - "labels" (torch.Tensor): The tokenized and padded/truncated caption tensor.
     """
 
-    def __init__(self, dataset: HFDataset, image_processor: ViTImageProcessor, tokenizer: GPT2TokenizerFast, transform: Optional[Callable[[Image.Image], Image.Image]] = None, max_length: int = 50) -> None:
+    def __init__(
+        self,
+        dataset: HFDataset,
+        image_processor: ViTImageProcessor,
+        tokenizer: GPT2TokenizerFast,
+        transform: Optional[Callable[[Image.Image], Image.Image]] = None,
+        max_length: int = 50,
+    ) -> None:
         self.dataset = dataset
         self.image_processor = image_processor
         self.tokenizer = tokenizer
         self.transform = transform
         self.max_length = max_length
-        logger.info(
-            f"Flickr30kDataset initialized with {len(self.dataset)} samples.")
+        logger.info(f"Flickr30kDataset initialized with {len(self.dataset)} samples.")
 
     def __len__(self) -> int:
         return len(self.dataset)
@@ -67,8 +73,7 @@ class Flickr30kDataset(Dataset):
                 image = self.transform(image)
 
             # Process the image with the image processor
-            pixel_values = self.image_processor(
-                images=image, return_tensors="pt").pixel_values.squeeze()
+            pixel_values = self.image_processor(images=image, return_tensors="pt").pixel_values.squeeze()
 
             # Tokenize the caption
             tokenized_caption = self.tokenizer(

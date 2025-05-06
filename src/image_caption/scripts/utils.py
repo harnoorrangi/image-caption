@@ -3,13 +3,11 @@ from typing import Any, Dict, Optional
 
 import yaml
 from evaluate import load
-from transformers import EvalPrediction
-from transformers import PreTrainedTokenizer
-from loguru import logger
-
 from hydra import compose, initialize
 from hydra.core.global_hydra import GlobalHydra
+from loguru import logger
 from omegaconf import DictConfig
+from transformers import EvalPrediction, PreTrainedTokenizer
 
 
 def load_config(filename: str) -> Optional[Dict[str, Any]]:
@@ -34,8 +32,9 @@ def load_config(filename: str) -> Optional[Dict[str, Any]]:
     except yaml.YAMLError as e:
         (f"Error parsing YAML file: {e}")
         raise
-    
-def load_hydra_config(config_name: str, config_path = "../configs") ->  Optional[Dict[str, Any]]:
+
+
+def load_hydra_config(config_name: str, config_path="../configs") -> Optional[Dict[str, Any]]:
     """Safely initializes Hydra and returns the composed config."""
     if not GlobalHydra.instance().is_initialized():
         initialize(config_path=config_path, version_base=None)
