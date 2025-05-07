@@ -28,12 +28,13 @@ def print_hello():
 
 @app.command()
 def predict(
-    model_name: str = typer.Option(..., "--model-name", "-m", help="Hugging Face model name or path"),
     image_paths: List[str] = typer.Option(..., "--image-paths", "-i", help="Paths to the images"),
 ):
     """
     Predict captions for the specified image(s) using the given model.
     """
+    cfg = load_hydra_config("vit_gpt2")
+    model_name = cfg.train_params.hugging_face_model_id
     # Load model and tools
     model, image_processor, tokenizer, device = load_model(model_name)
 
