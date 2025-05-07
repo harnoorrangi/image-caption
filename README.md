@@ -10,10 +10,12 @@ pinned:    false
 
 
 # Image captioning
-
 Image generation using a fine tuned Vit+Gpt2 encoder-decoder architecture using Mlops best practices.
 
 # Uses
-UV,Loguru,Hydra,Pytorch,Nox,Pre-commit,Streamlit,WandB, CI/CD
+UV,Loguru,Hydra,Pytorch,Nox,Pre-commit,Streamlit,WandB, CI/CD, typer
 
-# The final app is deployed on huggingface spaces
+# App
+The final app is hosted at: https://huggingface.co/spaces/hrangi/imagecaption
+
+
