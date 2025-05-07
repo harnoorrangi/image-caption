@@ -20,6 +20,9 @@ RUN --mount=type=bind,source=uv.lock,target=uv.lock \
 ADD . /app
 RUN uv sync --frozen
 
+# Make the shared librararies available to the system
+RUN chmod -R a+rX /root/.local/share/uv/python
+
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
 
