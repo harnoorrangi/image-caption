@@ -11,7 +11,7 @@ jobs:
         python-version: [3.10]
       fail-fast: false
     defaults:
-      runs:
+      run:
         shell: bash
     steps:
       - name: Checkout repository
