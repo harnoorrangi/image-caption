@@ -1,34 +1,27 @@
-# Use a Python image with uv pre-installed
-FROM ghcr.io/astral-sh/uv:python3.10-bookworm-slim
+FROM python:3.10-slim
 
-# Install the project into `/app`
+
+COPY --from=ghcr.io/astral-sh/uv:python3.10-bookworm-slim /uv /bin/uv
+
 WORKDIR /app
 
-# Enable bytecode compilation
-ENV UV_COMPILE_BYTECODE=1
 
-# Copy from the cache instead of linking since it's a mounted volume
-ENV UV_LINK_MODE=copy
+ENV XDG_CACHE_HOME=/app/.cache
 
-# Install the project's dependencies using the lockfile and settings
-RUN --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+
+COPY pyproject.toml uv.lock /app/
+
+
+RUN --mount=type=cache,target=/app/.cache \
     uv sync --frozen --no-install-project --no-dev
 
-# Then, add the rest of the project source code and install it
-# Installing separately from its dependencies allows optimal layer caching
-ADD . /app
-RUN uv sync --frozen
 
-# Make the shared librararies available to the system
-RUN chmod -R a+rX /root/.local/share/uv/python
+COPY . /app
+RUN --mount=type=cache,target=/app/.cache \
+    uv sync --frozen --no-dev
 
-# Place executables in the environment at the front of the path
+
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Reset the entrypoint, don't invoke `uv`
-ENTRYPOINT []
-
 EXPOSE 8501
-# Run app
-ENTRYPOINT ["streamlit", "run", "src/image_caption/scripts/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+ENTRYPOINT ["streamlit","run","src/image_caption/scripts/app.py","--server.port=8501","--server.address=0.0.0.0"]
