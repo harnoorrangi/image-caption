@@ -29,6 +29,5 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENTRYPOINT []
 
 EXPOSE 8501
-# Run streamlit app
-ENTRYPOINT ["streamlit", "run", "src/image_caption/scripts/app.py",
-            "--server.port=8501", "--server.address=0.0.0.0"]
+# Run app
+ENTRYPOINT ["streamlit", "run", "src/image_caption/scripts/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
